@@ -2,33 +2,8 @@
   publish = "."
   functions = "netlify/functions"
 
-[[redirects]]
-  from = "/api/tokens"
-  to = "/.netlify/functions/api"
-  status = 200
-  query = {splat = "tokens"}
-  force = true
-
-[[redirects]]
-  from = "/api/weights"
-  to = "/.netlify/functions/api"
-  status = 200
-  query = {splat = "weights"}
-  force = true
-
-[[redirects]]
-  from = "/api/intent"
-  to = "/.netlify/functions/api"
-  status = 200
-  query = {splat = "intent"}
-  force = true
-
-[[redirects]]
-  from = "/api/flowchart"
-  to = "/.netlify/functions/api"
-  status = 200
-  query = {splat = "flowchart"}
-  force = true
+[functions]
+  directory = "netlify/functions"
 
 [[redirects]]
   from = "/api/*"

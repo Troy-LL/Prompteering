@@ -135,35 +135,62 @@ def handle_flowchart(prompt):
     return {"intent": top, "nodes": nodes}
 
 # ── LAMBDA HANDLER ───────────────────────────────────────────────
+CORS_HEADERS = {
+    "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+}
+
 def handler(event, context):
     try:
-        _initialize()
-        
-        path = event.get("path", "")
-        sub_path = path.split("/")[-1]
-        
-        if event.get("httpMethod") != "POST":
-            return { "statusCode": 405, "body": json.dumps({"error": "Method not allowed"}) }
+        # Handle CORS preflight
+        if event.get("httpMethod") == "OPTIONS":
+            return {"statusCode": 204, "headers": CORS_HEADERS, "body": ""}
 
-        body = json.loads(event.get("body", "{}"))
+        if event.get("httpMethod") != "POST":
+            return {"statusCode": 405, "headers": CORS_HEADERS, "body": json.dumps({"error": "Method not allowed"})}
+
+        _initialize()
+
+        # Extract route from path — works whether the path is:
+        #   /api/tokens  (via rewrite)  OR  /.netlify/functions/api/tokens  (direct call)
+        path = event.get("path", "")
+        # Strip trailing slash and take the last non-empty segment
+        segments = [s for s in path.split("/") if s]
+        sub_path = segments[-1] if segments else ""
+
+        # Also check queryStringParameters as a fallback (?action=tokens)
+        if sub_path in ("api",):
+            qs = event.get("queryStringParameters") or {}
+            sub_path = qs.get("action", sub_path)
+
+        body_raw = event.get("body") or "{}"
+        body = json.loads(body_raw)
         prompt = body.get("prompt", "")
-        
-        if sub_path == "tokens": result = handle_tokens(prompt)
-        elif sub_path == "weights": result = handle_weights(prompt)
-        elif sub_path == "intent": result = handle_intent(prompt)
-        elif sub_path == "flowchart": result = handle_flowchart(prompt)
-        else: return { "statusCode": 404, "body": json.dumps({"error": f"Unknown endpoint: {sub_path}"}) }
+
+        if sub_path == "tokens":
+            result = handle_tokens(prompt)
+        elif sub_path == "weights":
+            result = handle_weights(prompt)
+        elif sub_path == "intent":
+            result = handle_intent(prompt)
+        elif sub_path == "flowchart":
+            result = handle_flowchart(prompt)
+        else:
+            return {"statusCode": 404, "headers": CORS_HEADERS, "body": json.dumps({"error": f"Unknown endpoint: {sub_path}"})}
 
         return {
             "statusCode": 200,
-            "headers": { "Content-Type": "application/json" },
-            "body": json.dumps(result)
+            "headers": CORS_HEADERS,
+            "body": json.dumps(result),
         }
     except Exception as e:
         return {
             "statusCode": 500,
+            "headers": CORS_HEADERS,
             "body": json.dumps({
                 "error": str(e),
-                "trace": traceback.format_exc()
-            })
+                "trace": traceback.format_exc(),
+            }),
         }
