@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 venv/
 .env
+node_modules/
 
 # NLTK data (too large for repo, auto-downloaded)
 .nltk_data/

@@ -1,0 +1,9 @@
+{
+  "name": "prompteering",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@dqbd/tiktoken": "^1.0.21",
+    "compromise": "^14.14.4"
+  }
+}
