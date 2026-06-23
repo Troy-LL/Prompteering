@@ -142,6 +142,29 @@ CORS_HEADERS = {
     "Access-Control-Allow-Methods": "POST, OPTIONS",
 }
 
+
+def _resolve_endpoint(event):
+    """Map rewritten Netlify requests back to tokens/weights/intent/flowchart."""
+    qs = event.get("queryStringParameters") or {}
+    endpoint = qs.get("endpoint")
+    if endpoint:
+        return endpoint
+
+    headers = {k.lower(): v for k, v in (event.get("headers") or {}).items()}
+    original_path = headers.get("x-netlify-original-path", "")
+    if original_path:
+        segments = [s for s in original_path.split("/") if s]
+        if segments and segments[-1] != "api":
+            return segments[-1]
+
+    path = event.get("path", "")
+    segments = [s for s in path.split("/") if s]
+    if segments and segments[-1] != "api":
+        return segments[-1]
+
+    return ""
+
+
 def handler(event, context):
     try:
         # Handle CORS preflight
@@ -153,17 +176,7 @@ def handler(event, context):
 
         _initialize()
 
-        # Extract route from path — works whether the path is:
-        #   /api/tokens  (via rewrite)  OR  /.netlify/functions/api/tokens  (direct call)
-        path = event.get("path", "")
-        # Strip trailing slash and take the last non-empty segment
-        segments = [s for s in path.split("/") if s]
-        sub_path = segments[-1] if segments else ""
-
-        # Also check queryStringParameters as a fallback (?action=tokens)
-        if sub_path in ("api",):
-            qs = event.get("queryStringParameters") or {}
-            sub_path = qs.get("action", sub_path)
+        sub_path = _resolve_endpoint(event)
 
         body_raw = event.get("body") or "{}"
         body = json.loads(body_raw)
