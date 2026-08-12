@@ -1,12 +1,9 @@
-# Prompteering MVP 🚀
+# Prompteering
 
-[![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/)
-[![Netlify Status](https://api.netlify.com/api/v1/badges/your-site-id/deploy-status)](https://app.netlify.com/sites/your-site-name/deploys)
+A local prompt analyzer. Paste a prompt, get NLP stats, API pricing, and intent classification.
 
-A **local AI prompt analyzer** that accepts any prompt and visually reports on NLP statistics, API pricing, and intent classification.
+Live: https://prompteering.netlify.app/
 
----
 
 ## ✨ Features
 
